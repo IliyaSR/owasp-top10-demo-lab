@@ -7,19 +7,18 @@ live inside app/routes/*.py, so that a `git diff vulnerable secure`
 shows exactly and only the security-relevant changes.
 """
 
+from __future__ import annotations
+
 import os
+from typing import Optional
 
 from flask import Flask
 
 
-def create_app(test_config: dict | None = None) -> Flask:
+def create_app(test_config: Optional[dict] = None) -> Flask:
     app = Flask(__name__, instance_relative_config=True)
 
     app.config.from_mapping(
-        # NOTE: in a real production app this secret would come from an
-        # environment variable / secrets manager, never hardcoded. For
-        # this lab project a fixed dev key is fine since the app never
-        # leaves localhost.
         SECRET_KEY="dev-secret-key-change-me",
         DATABASE=os.path.join(app.instance_path, "lab.sqlite"),
     )
