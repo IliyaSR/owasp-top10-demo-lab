@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Security Lab{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1><a href="{{ url_for('index') }}">Security Lab</a></h1>
+        <nav>
+            {% if session.get('user_id') %}
+                <span>Logged in as <strong>{{ session.get('username') }}</strong></span>
+                <a href="{{ url_for('auth.logout') }}">Log out</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}">Log in</a>
+                <a href="{{ url_for('auth.register') }}">Register</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main>
+        {% for message in get_flashed_messages() %}
+            <div class="flash">{{ message }}</div>
+        {% endfor %}
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
