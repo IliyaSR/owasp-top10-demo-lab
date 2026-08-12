@@ -76,7 +76,7 @@ def register():
                 db.execute(
                     "INSERT INTO users (username, password_hash, email) "
                     "VALUES (?, ?, ?)",
-                    (username, generate_password_hash(password), email),
+                    (username, generate_password_hash(password, method="pbkdf2:sha256"), email),
                 )
                 db.commit()
             except db.IntegrityError:
