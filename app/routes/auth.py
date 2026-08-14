@@ -129,7 +129,13 @@ def login():
 def dashboard():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
-    return render_template("auth/dashboard.html", username=session.get("username"))
+
+    from app.routes.comments import get_comments
+    comments = get_comments()
+
+    return render_template(
+        "auth/dashboard.html", username=session.get("username"), comments=comments
+    )
 
 
 @auth_bp.route("/logout")

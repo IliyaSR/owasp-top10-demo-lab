@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Attacker Collector (Lab Simulation){% endblock %}
+
+{% block content %}
+    <h2>Simulated Attacker Collector</h2>
+    <p>
+        This page represents what an attacker would see on their own
+        server after a Stored XSS payload exfiltrates data from a
+        victim's browser. It exists only for this lab demonstration -
+        no real external server is involved, everything stays on
+        localhost.
+    </p>
+    <ul>
+        {% for entry in entries %}
+            <li><code>{{ entry }}</code></li>
+        {% else %}
+            <li>Nothing captured yet.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
