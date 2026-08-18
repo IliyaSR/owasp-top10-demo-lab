@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Comments{% endblock %}
+
+{% block content %}
+    {#
+        VULNERABLE: `query | safe` disables Jinja2's auto-escaping for
+        the search term, which comes directly from the URL's `q`
+        parameter. See the module docstring in
+        app/routes/comments.py (search_comments) for the full
+        explanation of why this enables Reflected XSS.
+    #}
+    <h2>Search results for: {{ query | safe }}</h2>
+
+    <form method="get" action="{{ url_for('comments.search_comments') }}">
+        <input type="text" name="q" value="{{ query }}" placeholder="Search comments...">
+        <button type="submit">Search</button>
+    </form>
+
+    {% for comment in results %}
+        <div class="comment">
+            <strong>{{ comment.username }}</strong>
+            <span class="comment-date">{{ comment.created_at }}</span>
+            <p>{{ comment.content | safe }}</p>
+        </div>
+    {% else %}
+        <p>No matching comments.</p>
+    {% endfor %}
+
+    <p><a href="{{ url_for('auth.dashboard') }}">Back to dashboard</a></p>
+{% endblock %}

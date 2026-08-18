@@ -84,6 +84,55 @@ def get_comments():
     ).fetchall()
 
 
+@comments_bp.route("/comments/search")
+def search_comments():
+    """
+    VULNERABLE: Reflected XSS.
+
+    Unlike add_comment()/get_comments() above (Stored XSS - the
+    payload is saved in the database and affects every future
+    visitor), this route demonstrates the OTHER classic XSS variant:
+    the `q` query parameter is echoed straight back into the page,
+    unescaped, in the SAME response, and is never persisted anywhere.
+
+    Because nothing is stored, this attack only affects whoever
+    submits (or is tricked into clicking) a URL containing the
+    payload - e.g. an attacker sending a victim a link like:
+
+        http://127.0.0.1:5000/comments/search?q=<script>...</script>
+
+    The victim's own browser executes the script the moment the page
+    loads, in the victim's own authenticated session. No other user
+    is affected, and reloading the page without that query string
+    makes the payload disappear completely - this is what makes it
+    "Reflected" rather than "Stored".
+
+    See docs/testing/TC-XSS-02.md for the full documented test
+    scenario and payloads.
+    """
+    query = request.args.get("q", "")
+
+    results = []
+    if query:
+        db = get_db()
+        # The search itself is done safely (parameterized LIKE query) -
+        # the vulnerability is purely in how `query` is echoed back
+        # into the page heading below, not in how it is used here.
+        results = db.execute(
+            "SELECT comments.id, comments.content, comments.created_at, "
+            "users.username FROM comments "
+            "JOIN users ON comments.user_id = users.id "
+            "WHERE comments.content LIKE ? "
+            "ORDER BY comments.created_at DESC",
+            (f"%{query}%",),
+        ).fetchall()
+
+    # `query` is passed to the template and rendered with `| safe`
+    # there (see search_results.html) - that is the actual injection
+    # point for this vulnerability.
+    return render_template("auth/search_results.html", query=query, results=results)
+
+
 @comments_bp.route("/debug/collector")
 def collector():
     """
