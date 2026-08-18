@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+    <h2>Your Profile</h2>
+
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>Current email:</strong> {{ user.email }}</p>
+
+    <h3>Change email</h3>
+    {#
+        VULNERABLE: this form has no CSRF token. Compare with the
+        secure branch, where a hidden {{ csrf_token() }} field is
+        included and validated server-side on submit.
+    #}
+    <form method="post" action="{{ url_for('profile.update_email') }}">
+        <input type="email" name="email" placeholder="New email address" required>
+        <button type="submit">Update email</button>
+    </form>
+
+    <p><a href="{{ url_for('auth.dashboard') }}">Back to dashboard</a></p>
+{% endblock %}

