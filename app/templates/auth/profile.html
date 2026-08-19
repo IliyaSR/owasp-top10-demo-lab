@@ -15,6 +15,7 @@
         included and validated server-side on submit.
     #}
     <form method="post" action="{{ url_for('profile.update_email') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="email" name="email" placeholder="New email address" required>
         <button type="submit">Update email</button>
     </form>

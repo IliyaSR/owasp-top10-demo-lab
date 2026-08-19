@@ -107,8 +107,8 @@ def login():
         # the module docstring for why, and for the UNION-based
         # bypass this enables.
         # --------------------------------------------------------------
-        query = f"SELECT * FROM users WHERE username = '{username}'"
-        cursor = db.execute(query)
+        query = "SELECT * FROM users WHERE username = ?"
+        cursor = db.execute(query, (username,))
         user = cursor.fetchone()
 
         # Password verification itself is done correctly (hashed,

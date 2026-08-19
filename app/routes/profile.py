@@ -39,7 +39,7 @@ demonstrating that the attack works from a page the application never
 served and has no control over.
 """
 
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 
 from app.db import get_db
 
@@ -87,39 +87,11 @@ def update_email():
 
 @profile_bp.route("/users/<int:user_id>")
 def view_user(user_id):
-    """
-    VULNERABLE: Insecure Direct Object Reference (IDOR).
-
-    This route fetches a user's full profile directly by the `id`
-    given in the URL and renders it, with the ONLY check being "is
-    someone logged in at all":
-
-        if "user_id" not in session:
-            return redirect(url_for("auth.login"))
-
-    Notice what is MISSING: there is no check that the requested
-    `user_id` matches session["user_id"], or any other authorization
-    check confirming the logged-in user is actually allowed to view
-    THIS particular profile. Any authenticated user can view ANY
-    other user's profile - including their email address - simply by
-    changing the number in the URL (e.g. /users/1, /users/2, /users/3,
-    ...), regardless of whose account it belongs to.
-
-    This is fundamentally different from the other three
-    vulnerabilities in this thesis: it is not an injection flaw
-    (SQL Injection, XSS) and it does not rely on tricking a victim's
-    browser into sending an unwanted request (CSRF). It is a Broken
-    Access Control issue - the server correctly identifies WHO is
-    asking (via the session), but never checks WHETHER that person
-    is allowed to access the specific object being requested. The
-    database query itself is safe (parameterized) - the flaw is
-    entirely in the missing authorization check.
-
-    See docs/testing/TC-IDOR-01.md for the full documented test
-    scenario.
-    """
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
+
+    if user_id != session["user_id"]:
+        abort(403)
 
     db = get_db()
     user = db.execute(
@@ -131,5 +103,5 @@ def view_user(user_id):
         flash(f"No user found with id {user_id}.")
         return redirect(url_for("auth.dashboard"))
 
-    is_own_profile = user_id == session["user_id"]
+    is_own_profile = True
     return render_template("auth/view_user.html", user=user, is_own_profile=is_own_profile)

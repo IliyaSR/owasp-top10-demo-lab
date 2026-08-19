@@ -1,10 +1,12 @@
 """
 Flask application factory.
 
-This file is intentionally kept simple and identical between the
-`vulnerable` and `secure` branches - all the interesting differences
-live inside app/routes/*.py, so that a `git diff vulnerable secure`
-shows exactly and only the security-relevant changes.
+NOTE: unlike app/db.py and the template/static files, this file DOES
+differ between the `vulnerable` and `secure` branches - the `secure`
+branch adds a Content-Security-Policy response header here as an
+additional (defense-in-depth) mitigation against XSS, on top of the
+primary fix (proper output escaping, see app/templates/auth/*.html
+and app/routes/comments.py).
 """
 
 from __future__ import annotations
@@ -13,6 +15,9 @@ import os
 from typing import Optional
 
 from flask import Flask
+from flask_wtf import CSRFProtect
+
+csrf = CSRFProtect()
 
 
 def create_app(test_config: Optional[dict] = None) -> Flask:
@@ -31,6 +36,8 @@ def create_app(test_config: Optional[dict] = None) -> Flask:
     from . import db
     db.init_app(app)
 
+    csrf.init_app(app)
+
     from .routes.auth import auth_bp
     app.register_blueprint(auth_bp)
 
@@ -39,6 +46,11 @@ def create_app(test_config: Optional[dict] = None) -> Flask:
 
     from .routes.profile import profile_bp
     app.register_blueprint(profile_bp)
+
+    @app.after_request
+    def set_security_headers(response):
+        response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'"
+        return response
 
     @app.route("/")
     def index():

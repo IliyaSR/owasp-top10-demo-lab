@@ -9,6 +9,7 @@
     <section>
         <h3>Post a comment</h3>
         <form method="post" action="{{ url_for('comments.add_comment') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <textarea name="content" rows="3" required
                       placeholder="Write a comment..."></textarea>
             <button type="submit">Post comment</button>
@@ -30,13 +31,7 @@
                 <strong>{{ comment.username }}</strong>
                 <span class="comment-date">{{ comment.created_at }}</span>
                 <p>
-                    {#
-                        VULNERABLE: the `safe` filter disables Jinja2's
-                        default auto-escaping for this value. See the
-                        module docstring in app/routes/comments.py for
-                        the full explanation.
-                    #}
-                    {{ comment.content | safe }}
+                    {{ comment.content }}
                 </p>
             </div>
         {% else %}
