@@ -4,6 +4,7 @@
 
 {% block content %}
     <h2>Welcome, {{ username }}</h2>
+    <p><a href="{{ url_for('profile.view_user', user_id=session['user_id']) }}">View my profile (ID: {{ session['user_id'] }})</a></p>
 
     <section>
         <h3>Post a comment</h3>

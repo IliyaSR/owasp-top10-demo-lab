@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}User #{{ user.id }}{% endblock %}
+
+{% block content %}
+    <h2>User Profile: {{ user.username }}</h2>
+
+    {% if not is_own_profile %}
+        <div class="flash" style="background:#fff1f0;border-color:#ffa39e;">
+            <strong>Note (lab observation):</strong> you are viewing this
+            profile via <code>/users/{{ user.id }}</code>, but this is
+            NOT your own account. In a correctly-secured application,
+            this page should have refused access. See
+            docs/testing/TC-IDOR-01.md.
+        </div>
+    {% endif %}
+
+    <p><strong>User ID:</strong> {{ user.id }}</p>
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Account created:</strong> {{ user.created_at }}</p>
+
+    <p><a href="{{ url_for('auth.dashboard') }}">Back to dashboard</a></p>
+{% endblock %}
