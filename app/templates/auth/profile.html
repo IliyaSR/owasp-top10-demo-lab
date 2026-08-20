@@ -10,9 +10,10 @@
 
     <h3>Change email</h3>
     {#
-        VULNERABLE: this form has no CSRF token. Compare with the
-        secure branch, where a hidden {{ csrf_token() }} field is
-        included and validated server-side on submit.
+        SECURE: this form includes a hidden csrf_token field below,
+        validated server-side by Flask-WTF's CSRFProtect (see
+        app/__init__.py). Compare with the vulnerable branch, where
+        this form has no CSRF token at all.
     #}
     <form method="post" action="{{ url_for('profile.update_email') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
