@@ -1,27 +1,23 @@
 """
-Comments routes - VULNERABLE VERSION (Stored XSS).
+Comments routes - SECURE VERSION (Stored + Reflected XSS).
 
 --------------------------------------------------------------------
-WHY IS THIS VULNERABLE?
+WHY IS THIS SECURE?
 --------------------------------------------------------------------
-User-submitted comment content is rendered back into the page using
-Jinja2's `| safe` filter, which explicitly disables Jinja2's default
-auto-escaping for that value:
+Comment content is now rendered as a plain Jinja2 variable, with no
+`| safe` filter, in app/templates/auth/dashboard.html:
 
-    {{ comment.content | safe }}
+    {{ comment.content }}
 
-Normally, Jinja2 auto-escapes all variables by default (converting
-`<` to `&lt;`, etc.), which is itself a strong built-in XSS defense.
-The `| safe` filter is a deliberate opt-out of that protection - it
-tells Jinja2 "trust this string completely, render it as raw HTML".
+Jinja2's default auto-escaping is therefore active for this value
+(converting `<` to `&lt;`, etc.), so a comment containing a <script>
+tag is rendered as literal, inert text rather than being parsed and
+executed as HTML/JS. This directly fixes the Stored XSS vulnerability
+from the `vulnerable` branch, where the same value was rendered with
+`| safe`, disabling that protection.
 
-Because comment content comes directly from user input and is stored
-verbatim in the database, an attacker can submit a comment containing
-a <script> tag. Every time ANY user (not just the attacker) later
-views the comments page, that script executes in THEIR browser, in
-THEIR authenticated session - this is what makes it "Stored" XSS,
-as opposed to "Reflected" XSS (which only affects the single request
-that carries the payload).
+The reflected variant (`search_comments()` below) is fixed the same
+way - see its docstring for details.
 
 --------------------------------------------------------------------
 DEMONSTRATION ENDPOINT: /debug/collector
@@ -87,28 +83,32 @@ def get_comments():
 @comments_bp.route("/comments/search")
 def search_comments():
     """
-    VULNERABLE: Reflected XSS.
+    SECURE: Reflected XSS fix.
 
     Unlike add_comment()/get_comments() above (Stored XSS - the
-    payload is saved in the database and affects every future
-    visitor), this route demonstrates the OTHER classic XSS variant:
-    the `q` query parameter is echoed straight back into the page,
-    unescaped, in the SAME response, and is never persisted anywhere.
+    payload would be saved in the database and affect every future
+    visitor), the `vulnerable` branch's version of this route
+    demonstrated the OTHER classic XSS variant: the `q` query
+    parameter echoed straight back into the page, unescaped, in the
+    SAME response, never persisted anywhere.
 
-    Because nothing is stored, this attack only affects whoever
-    submits (or is tricked into clicking) a URL containing the
-    payload - e.g. an attacker sending a victim a link like:
+    Here, `query` is rendered as a plain Jinja2 variable, with no
+    `| safe` filter, in app/templates/auth/search_results.html:
+
+        {{ query }}
+
+    Jinja2's default auto-escaping is therefore active, so a `q`
+    value like `<script>...</script>` is rendered as literal text
+    instead of being parsed and executed by the browser - a request
+    such as:
 
         http://127.0.0.1:5000/comments/search?q=<script>...</script>
 
-    The victim's own browser executes the script the moment the page
-    loads, in the victim's own authenticated session. No other user
-    is affected, and reloading the page without that query string
-    makes the payload disappear completely - this is what makes it
-    "Reflected" rather than "Stored".
+    no longer executes anything in the victim's browser. This
+    directly fixes the reflected XSS from the `vulnerable` branch.
 
-    See docs/testing/TC-XSS-02.md for the full documented test
-    scenario and payloads.
+    See docs/testing/TC-XSS-02.md for the vulnerable-branch test
+    scenario and payloads this fix defeats.
     """
     query = request.args.get("q", "")
 
