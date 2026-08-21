@@ -36,6 +36,10 @@ any matching comments.
 ## Sub-scenario B — Proof of concept via URL parameter
 
 **Input URL:**
+```
+http://127.0.0.1:5000/comments/search?q=<script>alert('reflected')</script>
+```
+
 **Expected result (vulnerable branch):** The `q` parameter is
 rendered into the page heading via `{{ query | safe }}`, disabling
 auto-escaping. The browser executes the embedded script the moment
